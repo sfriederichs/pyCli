@@ -1,1 +1,6 @@
 dist
+install
+src/__pycache__
+src/build
+src/pyCli.spec
+logs

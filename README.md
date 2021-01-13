@@ -10,3 +10,5 @@ Future features will include:
 * Executable generation
 * NSIS installer
 
+To generate a new Python command-line script using this repo, do the following:
+
