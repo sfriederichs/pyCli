@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """"
 Generic Python CLI Script v0.1 
 Version 0.1 Build 1 (1/3/21)
@@ -37,7 +37,7 @@ def formatPath(path):
     return exists,newPath
 
 def ynUserPrompt(msg,default="y"):
-    if "y" in (str(input(str(msg) + " ("+str(default)+") ")).lower() or str(default)):
+    if 'y' in str(str(input(str(msg) + " ("+str(default)+") ")).lower() or str(default)):
         return True
     else:
         return False
@@ -160,11 +160,16 @@ def branch(branchPath):
     
     #3 - Copy over .gitignore and LICENSE.md as-is
     print("Copying files...")
-    copyPaths = [".gitignore","LICENSE.md","nsis\\install.nsi","src\\pyCli.py"]
+    copyPaths = [".gitignore","LICENSE.md","nsis/install.nsi","src/pyCli.py"]
     
     for filePath in copyPaths:
-        shutil.copyfile(os.path.join(".\\",filePath),os.path.join(branchPath,filePath))
-        
+        try:
+            newPath = os.path.join(branchPath,filePath)
+            oldPath = os.path.join("./",filePath)
+            shutil.copyfile(os.path.join("./",filePath),os.path.join(branchPath,filePath))
+            print(str(oldPath) + "->"+ str(newPath))
+        except IOError:	#File does not exist, usually
+            continue
     print("Finished branch, exiting...")
     
     sys.exit(2)
