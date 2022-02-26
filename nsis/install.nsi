@@ -90,6 +90,6 @@ section "install"
 	# Add any other files for the install directory (license files, app data, etc) here
     
     #This creates a shortcut to the executable on the desktop - the second set of options in quotes are for command-line arguments
-	CreateShortcut "$desktop\pyApp.lnk" "$instdir\pyCli.exe" 
+	CreateShortcut "$desktop\pyApp.lnk" "$instdir\$appshortname.exe" 
  
 sectionEnd
