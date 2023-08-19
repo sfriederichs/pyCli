@@ -63,14 +63,14 @@ def branch(branchPath):
 
     #2 - Add subdirectories
     print("Making subdirectories...")
-    prjSubDirs = ["logs","src","cfg","install","nsis","bin","res","lib","release","build"]
+    prjSubDirs = ["logs","src","cfg","res","lib","release","build"]
     for subDir in prjSubDirs:
         subDirPath = os.path.join(branchPath,subDir)
         os.mkdir(subDirPath)
 
     #3 - Copy over .gitignore and LICENSE.md as-is
     print("Copying files...")
-    copyPaths = [".gitignore","LICENSE.md","nsis/install.nsi","src/pyCli.py","lib/cliLib.py"]
+    copyPaths = [".gitignore","LICENSE.md","build/install.nsi","src/pyCli.py","lib/cliLib.py"]
 
     for filePath in copyPaths:
         try:
