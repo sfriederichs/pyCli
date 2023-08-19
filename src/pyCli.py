@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""""
+"""
 Generic Python CLI Script v0.1 
 Version 0.1 Build 1 (8/18/23)
 Author: Stephen Friederichs
@@ -21,74 +21,89 @@ import sys
 import datetime
 from cliLib import prettyPrint,ynUserPrompt,formatPath,branch
 
-def license():
+logFilePath = datetime.datetime.now().strftime('logs/log_%H_%M_%d_%m_%Y.log')
+logLevel = logging.DEBUG
+logFormatStr = '%(asctime)s - %(threadName)s - %(funcName)s  - %(levelname)-8s %(message)s'
+
+def license(arg=None):
     for line in __doc__.splitlines()[2:4]:
         prettyPrint(line)
+    sys.exit(0)
 
-def help():
+def help(arg=None):
     for line in __doc__.splitlines()[4:]:
         prettyPrint(line)
+    sys.exit(0)
 
-def version():
+def version(arg=None):
     prettyPrint(__doc__.splitlines()[2])
+    sys.exit(0)
 
 def progId():
     prettyPrint(__doc__.splitlines()[1])
 
-def init():
-    progId()
+def getCliOpts(docString):
 
-    logFilePath = datetime.datetime.now().strftime('logs/log_%H_%M_%d_%m_%Y.log')
+    shortOpts = []
+    longOpts = []
+    funcNames = []
 
-    logLevel = logging.DEBUG
-    formatStr = '%(asctime)s - %(threadName)s - %(funcName)s  - %(levelname)-8s %(message)s'
+    for line in docString.splitlines():
+        pass
+        #print(str(line))
 
+    return shortOpts,longOpts,funcNames
 
-    #Read the command-line options from the docstring
-
+def loglevel(arg):
+    global logLevel
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hvlf:e:b:', ['help','version','license','logfile=','loglevel=','branch='])
+        if str(arg).upper() == "DEBUG":
+            logLevel=logging.DEBUG
+        elif str(arg).upper() == "INFO":
+            logLevel= logging.INFO
+        elif str(arg).upper() == "WARNING":
+            logLevel= logging.WARNING
+        elif str(arg).upper() == "ERROR":
+            logLevel = logging.ERROR
+        else:
+            raise ValueError
+    except ValueError:
+        print("Bad logging level")
+        help()
+        sys.exit(2)
+
+def logfilepath(arg):
+    global logFilePath
+    logFilepath = str(arg)
+
+def init():
+    global logFilePath
+    global logLevel
+    global formatStr
+
+#    progId()
+
+    #Read the command-line options from the docstring
+    shortOpts,longOpts,funcNames = getCliOpts(__doc__)
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "".join(shortOpts), longOpts)
     except getopt.GetoptError:
         print("Bad argument(s)")
         help()
         sys.exit(2)
 
     for opt, arg in opts:
-        if opt in ('-h', '--help'):
-            help()
-            sys.exit(0)
-        elif opt in ('-l','--license'):
-            license()
-        elif opt in ('-f','--logfilepath'):
-            logFilePath=str(arg)
-        elif opt in ('-e','--loglevel='):
-            try:
-                if str(arg).upper() == "DEBUG":
-                    logLevel=logging.DEBUG
-                elif str(arg).upper() == "INFO":
-                    logLevel= logging.INFO
-                elif str(arg).upper() == "WARNING":
-                    logLevel= logging.WARNING
-                elif str(arg).upper() == "ERROR":
-                    logLevel = logging.ERROR
-                else:
-                    raise ValueError
-            except ValueError:
-                print("Bad logging level")
+        for shortOpt,longOpt,funcName in zip(shortOpts,longOpts,funcNames):
+            if opt in (shortOpt, longOpt):
+                eval( str(funcName)+"(arg)" )
+            else:
+                print("Bad Command line argument: " +str(opt)+ " - " +str(arg))
                 help()
                 sys.exit(2)
-        elif opt in ('-v','--version'):
-            version()
-            sys.exit(0)
-        elif opt in ('-b','--branch='):
-            branch(arg)
-        else:
-            print("Bad command line argument: "+str(opt)+" - " +str(arg))
-            help()
-            sys.exit(2)
 
-    logging.basicConfig(filename=logFilePath,filemode='a',level=logLevel,format=formatStr)
+    logging.basicConfig(filename=logFilePath,filemode='a',level=logLevel,format=logFormatStr)
 
     #Then, retrieve a StreamHandler - this outputs log data to the console
     console = logging.StreamHandler()
@@ -97,7 +112,7 @@ def init():
     #Note, however that you don't need them both to be configured the same - it may be
     #entirely appropriate to have different settings for console vs. file.
 
-    formatter = logging.Formatter(formatStr)
+    formatter = logging.Formatter(logFormatStr)
     console.setLevel(logLevel)
     console.setFormatter(formatter)
 
