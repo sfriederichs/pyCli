@@ -11,27 +11,24 @@ The following command-line parameters control the behavior of the script:
 -l, --license - Display author and license information
 -f, --logfilepath=<PATH> - Set the log file path
 -e, --loglevel=<LEVEL> - Set log level: DEBUG, INFO, WARNING, ERROR
--b, --branch=<BRANCHPATH> - Create a new project based on this script at the
-                            passed BRANCHPATH. The project name is assumed to be the last element of BRANCHPATH
+-b, --branch=<BRANCHPATH> - Create a new project based on this script at the passed BRANCHPATH.
 """
 
 import logging
 import getopt
 import sys
 import datetime
-from cliLib import prettyPrint,ynUserPrompt,formatPath,branch
+from cliLib import prettyPrint,ynUserPrompt,formatPath,branch,getCliOpts,progId
+import re
 
 logFilePath = datetime.datetime.now().strftime('logs/log_%H_%M_%d_%m_%Y.log')
 logLevel = logging.DEBUG
 logFormatStr = '%(asctime)s - %(threadName)s - %(funcName)s  - %(levelname)-8s %(message)s'
 
-def license(arg=None):
-    for line in __doc__.splitlines()[2:4]:
-        prettyPrint(line)
-    sys.exit(0)
+#Functions to handle command-line arguments
 
 def help(arg=None):
-    for line in __doc__.splitlines()[4:]:
+    for line in __doc__.splitlines()[5:]:
         prettyPrint(line)
     sys.exit(0)
 
@@ -39,20 +36,17 @@ def version(arg=None):
     prettyPrint(__doc__.splitlines()[2])
     sys.exit(0)
 
-def progId():
-    prettyPrint(__doc__.splitlines()[1])
+def license(arg=None):
+    prettyPrint(__doc__.splitlines()[4])
+    sys.exit(0)
 
-def getCliOpts(docString):
+def logfilepath(arg):
+    global logFilePath
+    exists,logFilepath = formatPath(arg)
 
-    shortOpts = []
-    longOpts = []
-    funcNames = []
-
-    for line in docString.splitlines():
-        pass
-        #print(str(line))
-
-    return shortOpts,longOpts,funcNames
+    if not exists:
+        print("Log file path does not exist: " + str(logFilepath))
+        sys.exit(2)
 
 def loglevel(arg):
     global logLevel
@@ -73,35 +67,36 @@ def loglevel(arg):
         help()
         sys.exit(2)
 
-def logfilepath(arg):
-    global logFilePath
-    logFilepath = str(arg)
 
 def init():
     global logFilePath
     global logLevel
     global formatStr
 
-#    progId()
+    progId(__doc__)
 
     #Read the command-line options from the docstring
     shortOpts,longOpts,funcNames = getCliOpts(__doc__)
-
     try:
         opts, args = getopt.getopt(sys.argv[1:], "".join(shortOpts), longOpts)
-    except getopt.GetoptError:
-        print("Bad argument(s)")
+    except getopt.GetoptError as e:
+        print("Bad argument(s): "+str(e))
         help()
         sys.exit(2)
 
     for opt, arg in opts:
+
+        badArg=True
+
         for shortOpt,longOpt,funcName in zip(shortOpts,longOpts,funcNames):
-            if opt in (shortOpt, longOpt):
+            if opt in ("-"+shortOpt.strip(":"), "--"+longOpt.strip("=")):
                 eval( str(funcName)+"(arg)" )
-            else:
-                print("Bad Command line argument: " +str(opt)+ " - " +str(arg))
-                help()
-                sys.exit(2)
+                badArg = False
+
+        if badArg:
+            print("Bad Command line argument: " +str(opt)+ " - " +str(arg))
+            help()
+            sys.exit(2)
 
     logging.basicConfig(filename=logFilePath,filemode='a',level=logLevel,format=logFormatStr)
 

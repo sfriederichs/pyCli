@@ -4,7 +4,7 @@ Misc CLI functions Library v0.1
 Version 0.1 Build 1 (8/18/23)
 Author: Stephen Friederichs
 License: Beerware License: If you find this program useful and you ever met me, buy me a beer. (I like Saisons)
-This script demonstrates the use of the getopt library to parse command-line arguments passed to the Python script.
+Miscellaneous functionality best suited to a library file instead of the main file
 """
 
 import textwrap
@@ -14,6 +14,7 @@ import sys
 import datetime
 import os
 import shutil
+import re
 
 def prettyPrint(uglyString):
     """This function properly formats docstrings for printing on the console"""
@@ -83,5 +84,34 @@ def branch(branchPath):
     print("Finished branch, exiting...")
 
     sys.exit(2)
+
+
+def getCliOpts(docString):
+
+    shortOpts = []
+    longOpts = []
+    funcNames = []
+
+    for line in docString.splitlines():
+
+        matches = re.match("(-[a-z]+), (--[a-z]+=?)",line)
+        if matches:
+            shortOpt,longOpt = matches.groups()
+            funcName = longOpt.strip("=").strip("--")
+            longOpt=longOpt.strip("--")
+            shortOpt = shortOpt.strip("-")
+
+            if "=" in longOpt:
+                shortOpt = shortOpt + ":"
+
+            shortOpts.append(shortOpt)
+            longOpts.append(longOpt)
+            funcNames.append(funcName)
+
+    return shortOpts,longOpts,funcNames
+
+def progId(docString):
+    prettyPrint(docString.splitlines()[1])
+
 if __name__=="__main__":
     pass
