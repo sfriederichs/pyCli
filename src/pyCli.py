@@ -9,21 +9,25 @@ The following command-line parameters control the behavior of the script:
 -h, --help - Shows this screen and exits
 -v, --version - Display version information
 -l, --license - Display author and license information
+-c, --cfgfile=<CFGFILE> - Specify a custom configuration file
 -f, --logfilepath=<PATH> - Set the log file path
 -e, --loglevel=<LEVEL> - Set log level: DEBUG, INFO, WARNING, ERROR
 -b, --branch=<BRANCHPATH> - Create a new project based on this script at the passed BRANCHPATH.
 """
 
 import logging
+import logging.config
 import getopt
 import sys
 import datetime
 from cliLib import prettyPrint,ynUserPrompt,formatPath,branch,getCliOpts,progId
+import configparser
 import re
 
 logFilePath = datetime.datetime.now().strftime('logs/log_%H_%M_%d_%m_%Y.log')
 logLevel = logging.DEBUG
 logFormatStr = '%(asctime)s - %(threadName)s - %(funcName)s  - %(levelname)-8s %(message)s'
+config = configparser.ConfigParser()
 
 #Functions to handle command-line arguments
 
@@ -47,6 +51,20 @@ def logfilepath(arg):
     if not exists:
         print("Log file path does not exist: " + str(logFilepath))
         sys.exit(2)
+
+#Read a config file into the global config
+#If exit is true, file must exist, otherwise the program will exit
+
+def cfgfile(arg,exit=True):
+    global config
+    exists,cfgFilePath = formatPath(arg)
+
+    if exists:
+        config.read(cfgFilePath) 
+        logging.config.fileConfig(cfgFilePath)
+    elif exit:
+        print("Unable to find configuration file " + str(cfgFilePath) )
+        sys.exit(0)
 
 def loglevel(arg):
     global logLevel
@@ -75,6 +93,9 @@ def init():
 
     progId(__doc__)
 
+    #If it exists, read default.cfg and populate the global config
+    cfgfile("cfg/defaults.cfg",exit=False)
+
     #Read the command-line options from the docstring
     shortOpts,longOpts,funcNames = getCliOpts(__doc__)
     try:
@@ -97,22 +118,6 @@ def init():
             print("Bad Command line argument: " +str(opt)+ " - " +str(arg))
             help()
             sys.exit(2)
-
-    logging.basicConfig(filename=logFilePath,filemode='a',level=logLevel,format=logFormatStr)
-
-    #Then, retrieve a StreamHandler - this outputs log data to the console
-    console = logging.StreamHandler()
-
-    #Now configure the stream handler to the same settings as the file handler
-    #Note, however that you don't need them both to be configured the same - it may be
-    #entirely appropriate to have different settings for console vs. file.
-
-    formatter = logging.Formatter(logFormatStr)
-    console.setLevel(logLevel)
-    console.setFormatter(formatter)
-
-    #And finally, attach the console handler to the logger so the output goes both places
-    logging.getLogger('').addHandler(console)
 
     logging.debug("Logging is configured - Log Level %s , Log File: %s",str(logLevel),logFilePath) 
 
