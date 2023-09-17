@@ -119,7 +119,7 @@ def init():
             help()
             sys.exit(2)
 
-    logging.debug("Logging is configured - Log Level %s , Log File: %s",str(logLevel),logFilePath) 
+    logging.debug("Initialization complete")
 
 if __name__=="__main__":
     
