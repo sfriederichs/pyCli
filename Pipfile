@@ -8,8 +8,8 @@ name = "pypi"
 [dev-packages]
 
 [requires]
-python_version = ">=3.7"
+python_version = "3"
 
 [scripts]
 script = "python3 src/pyCli.py"
-
+branch = "python3 src/pyCli.py -b "

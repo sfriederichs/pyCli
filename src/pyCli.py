@@ -44,13 +44,35 @@ def license(arg=None):
     prettyPrint(__doc__.splitlines()[4])
     sys.exit(0)
 
-def logfilepath(arg):
-    global logFilePath
-    exists,logFilepath = formatPath(arg)
+#Adds a file handler for the specified file in the arg
+#By default, will remove existing file handlers
+def logfilepath(arg,removeHandlers=True):
+    global config
+    exists,logFilePath = formatPath(arg)
 
-    if not exists:
-        print("Log file path does not exist: " + str(logFilepath))
-        sys.exit(2)
+    #Create a new file handler to replace the existing one
+    fileHandler = logging.FileHandler(logFilePath, 'a')
+
+    #If available, grab the format used in the current file handler
+    try:
+        formatter = config["handler_logfileHandler"]["formatter"]
+        formatStr = config["formatter_"+str(formatter)]["format"]
+        formatter = logging.Formatter(formatStr)
+    except KeyError:
+        #Otherwise, use a default one
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(funcName)s - %(threadName)s - %(levelname) -8s - %(message)s")
+
+    fileHandler.setFormatter(formatter)
+
+    #Remove any existing file loggers 
+    log = logging.getLogger()
+
+    if removeHandler:
+        for handler in log.handlers:
+            if isinstance(handler,logging.FileHandler):
+                log.removeHandler(handler)
+
+    log.addHandler(fileHandler)
 
 #Read a config file into the global config
 #If exit is true, file must exist, otherwise the program will exit
@@ -66,6 +88,7 @@ def cfgfile(arg,exit=True):
         print("Unable to find configuration file " + str(cfgFilePath) )
         sys.exit(0)
 
+#Sets the log level for all logging handlers (files, console, etc.)
 def loglevel(arg):
     global logLevel
 

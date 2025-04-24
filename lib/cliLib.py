@@ -71,7 +71,7 @@ def branch(branchPath):
 
     #3 - Copy over .gitignore and LICENSE.md as-is
     print("Copying files...")
-    copyPaths = [".gitignore","LICENSE.md","build/install.nsi","src/pyCli.py","lib/cliLib.py"]
+    copyPaths = [".gitignore","LICENSE.md","build/install.nsi","src/pyCli.py","lib/cliLib.py","Pipfile","README.md","cfg/default.cfg",".env"]
 
     for filePath in copyPaths:
         try:
